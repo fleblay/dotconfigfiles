@@ -1,9 +1,0 @@
-[TYPE] - Description
-
-#TYPE should be one of FEATURE/FIX
-#Description should be less than 50 char
-
-BODY
-
-#BODY should wrap at 80 char
-#BODY should explain what and why versus how

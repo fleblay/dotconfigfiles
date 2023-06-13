@@ -35,7 +35,7 @@ vim.api.nvim_create_user_command(
 		desc = 'Starting server',
 		nargs = 1,
 		complete = function()
-			return {'cpp', 'ts', 'html'}
+			return {'cpp', 'ts', 'html', 'go'}
 		end
 	}
 )

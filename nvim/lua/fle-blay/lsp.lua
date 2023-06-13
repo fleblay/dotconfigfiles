@@ -22,6 +22,13 @@ make_filetypes = function (language)
 			'html',
 			'css',
 		}
+	elseif language == 'go' then
+		filetypes = {
+			'go',
+			'gomod',
+			'gowork',
+			'gotmpl',
+		}
 	else
 		print("Make_filetypes error : ", language, "is unknown")
 	end
@@ -40,7 +47,7 @@ make_config = function (language)
 		}
 		--]]
 }
-		config.cmd = {'typescript-language-server', '--stdio'} -- npm install -g typescript-language-server
+		config.cmd = {'typescript-language-server', '--stdio'} -- npm install -g typescript-language-server typescript
 		config.name = 'tsserver' -- name is log messages
 	elseif language == 'cpp' then
 		config.cmd = {'clangd'}
@@ -48,6 +55,9 @@ make_config = function (language)
 	elseif language == 'html' then
 		config.cmd = {'html-languageserver', '--stdio'} -- npm install -g vscode-html-languageserver-bin
 		config.name = 'htmlserver' -- name is log messages
+	elseif language == 'go' then
+		config.cmd = {'gopls'} -- npm install -g vscode-html-languageserver-bin
+		config.name = 'gopls' -- name is log messages
 	else
 		print("Make_config error : ", language, "is unknown")
 		return nil

@@ -46,10 +46,10 @@ vim.api.nvim_create_autocmd('User', {
 		bufmap('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<cr>')
 
 		--Move to previous diagnostic
-		bufmap('n', 'ssn', '<cmd>lua vim.diagnostic.goto_prev({severity = vim.diagnostic.severity.ERROR})<cr>') -- USEFULL
+		bufmap('n', 'ssp', '<cmd>lua vim.diagnostic.goto_prev({severity = vim.diagnostic.severity.ERROR})<cr>') -- USEFULL
 
 		--Move to next diagnostic
-		bufmap('n', 'ssp', '<cmd>lua vim.diagnostic.goto_next({severity = vim.diagnostic.severity.ERROR})<cr>') -- USEFULL
+		bufmap('n', 'ssn', '<cmd>lua vim.diagnostic.goto_next({severity = vim.diagnostic.severity.ERROR})<cr>') -- USEFULL
 
 		bufmap('n', 'gc', '<cmd>lua vim.lsp.buf.code_action()<cr>') -- USEFULL
 

@@ -56,6 +56,8 @@ vim.api.nvim_create_autocmd('User', {
 		--No mapping for vim.lsp.buf.rename()
 		--No mapping (x mode) for vim.lsp.buf.range_code_action()
 		
-		bufmap('n', 'g=', '<cmd>lua vim.lsp.buf.formatting()<cr>') -- USEFULL
+		--For older vim version, before format
+		--bufmap('n', 'g=', '<cmd>lua vim.lsp.buf.formatting()<cr>') -- USEFULL
+		bufmap('n', 'g=', '<cmd>lua vim.lsp.buf.format({async = true})<cr>') -- USEFULL
 	end
 })

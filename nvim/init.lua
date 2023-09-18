@@ -1,41 +1,46 @@
-require("fle-blay.lsp")
-require("fle-blay.autocmd")
-require("fle-blay.utils_lsp")
+--1. install nvim-lspconfig
+--2. install lsp servers using brew preferably
+require'lspconfig'.tsserver.setup{}
+require'lspconfig'.eslint.setup{}
 
 vim.cmd("source ~/.vimrc")
 
-local launch_server = function(language)
-	if not active_servers then
-		active_servers = {}
-	end
-	if active_servers[language] == true then
-		print("Server is already launched for : " .. language)
-		return
-	end
-	local filetypes = make_filetypes(language)
-	local config = make_config(language)
-	if (filetypes == nil or config == nil) then
-		print("Unsupported server type : " .. language)
-		return
-	end
-	set_default_config(config, filetypes)
-	vim.lsp.start_client(config)
-	active_servers[language] = true
-end
+-- Global mappings.
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+vim.keymap.set('n', 'sso', vim.diagnostic.open_float)
+vim.keymap.set('n', 'ssp', vim.diagnostic.goto_prev)
+vim.keymap.set('n', 'ssn', vim.diagnostic.goto_next)
+--vim.keymap.set('n', 'ssl', vim.diagnostic.setloclist)
 
--- creates a new user command with ({name}, {command}, {*opts})
-vim.api.nvim_create_user_command(
-	'LaunchServer',
-	function(var)
-		if (var.args == nil) then print("Need args to launch LSP server") return end
-		print("Launching server " .. var.args)
-		launch_server(var.args)
-	end,
-	{
-		desc = 'Starting server',
-		nargs = 1,
-		complete = function()
-			return {'cpp', 'ts', 'html', 'go'}
-		end
-	}
-)
+-- Use LspAttach autocommand to only map the following keys
+-- after the language server attaches to the current buffer
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+	vim.keymap.set('i', '<C-k>', '<C-x><C-o>')
+
+	vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc'
+    -- Buffer local mappings.
+    -- See `:help vim.lsp.*` for documentation on any of the below functions
+    local opts = { buffer = ev.buf }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', 'sfa', vim.lsp.buf.add_workspace_folder, opts)
+    vim.keymap.set('n', 'sfr', vim.lsp.buf.remove_workspace_folder, opts)
+	vim.keymap.set('n', 'sfl', function()
+      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, opts)
+    vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', 'g=', function()
+      vim.lsp.buf.format { async = true }
+    end, opts)
+  end,
+})

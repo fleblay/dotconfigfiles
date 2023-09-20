@@ -14,6 +14,9 @@ require'lspconfig'.eslint.setup{}
 --IBMPlexMono
 --set the terminal to use it
 
+require("nvim-tree").setup()
+require("nvim-web-devicons").setup()
+
 -- disable netrw at the very start of your init.lua
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
@@ -21,10 +24,14 @@ vim.g.loaded_netrwPlugin = 1
 -- set termguicolors to enable highlight groups
 vim.opt.termguicolors = true
 
-require("nvim-tree").setup()
-require("nvim-web-devicons").setup()
+vim.keymap.set('n', '<leader>to', ':NvimTreeToggle<CR>')
+vim.keymap.set('n', '<leader>tf', ':NvimTreeFindFile<CR>')
+vim.keymap.set('n', '<leader>tc', ':NvimTreeCollapse<CR>')
 
-vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>')
+--USEFULL :
+--P Parent directory
+--< Previous sibling
+--> Next sibling
 
 --4. install tree-sitter
 --https://github.com/nvim-treesitter/nvim-treesitter.git
@@ -45,17 +52,17 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
     -- Enable completion triggered by <c-x><c-o>
     vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-	vim.keymap.set('i', '<C-k>', '<C-x><C-o>')
+	vim.keymap.set('i', '<C-k>', '<C-x><C-o>') --MOST USEFULL
 
 	vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc'
     -- Buffer local mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     local opts = { buffer = ev.buf }
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts) --USEFULL
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts) --USEFULL
     vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-    vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts) --USEFULL
 	--workspace
     vim.keymap.set('n', 'sfa', vim.lsp.buf.add_workspace_folder, opts)
     vim.keymap.set('n', 'sfr', vim.lsp.buf.remove_workspace_folder, opts)
@@ -63,8 +70,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, opts)
     vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)
-    vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts) --USEFULL
+    vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts) --USEFULL
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'g=', function()
       vim.lsp.buf.format { async = true }

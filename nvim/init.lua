@@ -1,5 +1,9 @@
 vim.cmd("source ~/.vimrc")
 
+--Use nvim as mergetool
+vim.fn.system("git config --global mergetool nvim")
+vim.fn.system("git config --global mergetool.nvim.cmd 'nvim -d -c \"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\"'")
+
 --1. install nvim-lspconfig
 --git clone https://github.com/neovim/nvim-lspconfig.git
 --2. install lsp servers using brew preferably

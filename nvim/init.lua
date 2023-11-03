@@ -1,106 +1,128 @@
+--Source old vimrc file
 vim.cmd("source ~/.vimrc")
+vim.g.mapleader = " "
 
 --Use nvim as mergetool
+vim.fn.system("git config --global core.editor nvim")
 vim.fn.system("git config --global mergetool nvim")
-vim.fn.system("git config --global mergetool.nvim.cmd 'nvim -d -c \"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\"'")
+vim.fn.system(
+  "git config --global mergetool.nvim.cmd 'nvim -d -c \"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\"'")
+vim.fn.system("git config --global mergetool.keepBackup false")
 
---1. install nvim-lspconfig
---git clone https://github.com/neovim/nvim-lspconfig.git
---2. install lsp servers using brew preferably
-require'lspconfig'.tsserver.setup{}
---brew install vscode-langservers-extracted
-require'lspconfig'.eslint.setup{}
---brew install lua-language-server
-require'lspconfig'.lua_ls.setup{
-  on_init = function(client)
-    local path = client.workspace_folders[1].name
-    if not vim.loop.fs_stat(path..'/.luarc.json') and not vim.loop.fs_stat(path..'/.luarc.jsonc') then
-      client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
-        Lua = {
-          runtime = {
-            -- Tell the language server which version of Lua you're using
-            -- (most likely LuaJIT in the case of Neovim)
-            version = 'LuaJIT'
+--Use lazy as a package manager
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup(
+  {
+    {
+      "folke/tokyonight.nvim",
+      lazy = false,
+      priority = 1000,
+      config = function()
+        require("tokyonight").setup({
+          style = "storm"
+        })
+        vim.cmd([[colorscheme tokyonight]])
+      end,
+    },
+    {
+      "nvim-treesitter/nvim-treesitter",
+      build = ":TSUpdate",
+      config = function()
+        local configs = require("nvim-treesitter.configs")
+
+        configs.setup({
+          ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "typescript", "bash", "html", "javascript", "json", "markdown", "tsx", "yaml" },
+          sync_install = false,
+          auto_install = true,
+          ignore_install = { "javascript" },
+          highlight = {
+            enable = true,
+            additional_vim_regex_highlighting = false,
           },
-          -- Make the server aware of Neovim runtime files
-          workspace = {
-            checkThirdParty = false,
-            library = {
-              vim.env.VIMRUNTIME
-              -- "${3rd}/luv/library"
-              -- "${3rd}/busted/library",
-            }
-            -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-            -- library = vim.api.nvim_get_runtime_file("", true)
-          }
+          indent = { enable = true },
+        })
+      end
+    },
+    {
+      --install font from https://www.nerdfonts.com/font-downloads
+      --IBMPlexMono
+      "nvim-tree/nvim-tree.lua",
+      dependencies = {
+        "nvim-tree/nvim-web-devicons"
+      },
+      keys = {
+        { "<leader>tt", "<cmd>NvimTreeToggle<cr>",   desc = "Toggle Tree" },
+        { "<leader>tf", "<cmd>NvimTreeFindFile<cr>", desc = "Find File in Tree" },
+        --USEFULL :
+        --P Parent directory
+        --< Previous sibling
+        --> Next sibling
+        --C-] CD
+        --o open
+      },
+      config = function()
+        -- disable netrw at the very start of your init.lua
+        vim.g.loaded_netrw = 1
+        vim.g.loaded_netrwPlugin = 1
+        -- set termguicolors to enable highlight groups
+        vim.opt.termguicolors = true
+        require("nvim-tree").setup()
+      end
+    },
+    {
+      "neovim/nvim-lspconfig",
+      config = function()
+        require 'lspconfig'.tsserver.setup {}
+
+        --brew install vscode-langservers-extracted
+        require 'lspconfig'.eslint.setup {}
+
+        --brew install lua-language-server
+        require 'lspconfig'.lua_ls.setup {
+          on_init = function(client)
+            local path = client.workspace_folders[1].name
+            if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+              client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
+                Lua = {
+                  runtime = {
+                    -- Tell the language server which version of Lua you're using
+                    -- (most likely LuaJIT in the case of Neovim)
+                    version = 'LuaJIT'
+                  },
+                  -- Make the server aware of Neovim runtime files
+                  workspace = {
+                    checkThirdParty = false,
+                    library = {
+                      vim.env.VIMRUNTIME
+                      -- "${3rd}/luv/library"
+                      -- "${3rd}/busted/library",
+                    }
+                    -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+                    -- library = vim.api.nvim_get_runtime_file("", true)
+                  }
+                }
+              })
+              client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
+            end
+            return true
+          end
         }
-      })
-
-      client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
-    end
-    return true
-  end
-}
-
---3. install nvim-tree
---git clone https://github.com/nvim-tree/nvim-tree.lua.git
---git clone https://github.com/nvim-tree/nvim-web-devicons.git
---install font from https://www.nerdfonts.com/font-downloads
---IBMPlexMono
---set the terminal to use it
-
-require("nvim-tree").setup()
-require("nvim-web-devicons").setup()
-
--- disable netrw at the very start of your init.lua
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-
--- set termguicolors to enable highlight groups
-vim.opt.termguicolors = true
-
-vim.keymap.set('n', '<leader>to', ':NvimTreeToggle<CR>')
-vim.keymap.set('n', '<leader>tf', ':NvimTreeFindFile<CR>')
-
---USEFULL :
---P Parent directory
---< Previous sibling
---> Next sibling
---C-] CD
---o open
-
---4. install tree-sitter
---https://github.com/nvim-treesitter/nvim-treesitter.git
---Install languages (check with :TSInstallInfo
---:TSInstall typescript
-
-require'nvim-treesitter.configs'.setup{
-  -- A list of parser names, or "all" (the five listed parsers should always be installed)
-  ensure_installed = { "c", "lua", "vim", "vimdoc", "query" },
-
-  -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
-
-  -- Automatically install missing parsers when entering buffer
-  auto_install = true,
-
-   -- List of parsers to ignore installing (or "all")
-  ignore_install = { "javascript" },
-
-  highlight = {
-    enable = true,
-    additional_vim_regex_highlighting = false,
-  },
-}
-
---5. install theme with nvim-treesitter support
---https://github.com/folke/tokyonight.nvim.git
-
-require("tokyonight").setup({
- style = "storm"
-})
-
-vim.cmd[[colorscheme tokyonight]]
+      end
+    },
+  }
+)
 
 -- Global mappings.
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -116,26 +138,26 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
     -- Enable completion triggered by <c-x><c-o>
     vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-	vim.keymap.set('i', '<C-k>', '<C-x><C-o>') --MOST USEFULL
+    vim.keymap.set('i', '<C-k>', '<C-x><C-o>') --MOST USEFULL
 
-	vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc'
+    vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc'
     -- Buffer local mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     local opts = { buffer = ev.buf }
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts) --USEFULL
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts) --USEFULL
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)        --USEFULL
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)              --USEFULL
     vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
     vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts) --USEFULL
-    vim.keymap.set('n', 'gl', vim.lsp.buf.signature_help, opts) --USEFULL
-	--workspace
+    vim.keymap.set('n', 'gl', vim.lsp.buf.signature_help, opts)    --USEFULL
+    --workspace
     vim.keymap.set('n', 'sfa', vim.lsp.buf.add_workspace_folder, opts)
     vim.keymap.set('n', 'sfr', vim.lsp.buf.remove_workspace_folder, opts)
-	vim.keymap.set('n', 'sfl', function()
+    vim.keymap.set('n', 'sfl', function()
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, opts)
     vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts) --USEFULL
+    vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)     --USEFULL
     vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts) --USEFULL
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'g=', function()

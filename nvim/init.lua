@@ -59,6 +59,7 @@ require("lazy").setup(
       --install font from https://www.nerdfonts.com/font-downloads
       --IBMPlexMono
       "nvim-tree/nvim-tree.lua",
+      lazy = false,
       dependencies = {
         "nvim-tree/nvim-web-devicons"
       },

@@ -43,7 +43,8 @@ require("lazy").setup(
         local configs = require("nvim-treesitter.configs")
 
         configs.setup({
-          ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "typescript", "bash", "html", "javascript", "json", "markdown", "tsx", "yaml" },
+          ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "typescript", "bash", "html", "javascript", "json",
+            "markdown", "tsx", "yaml" },
           sync_install = false,
           auto_install = true,
           ignore_install = { "javascript" },
@@ -81,6 +82,18 @@ require("lazy").setup(
         vim.opt.termguicolors = true
         require("nvim-tree").setup()
       end
+    },
+    {
+      'nvim-lualine/lualine.nvim',
+      dependencies = {
+        'nvim-tree/nvim-web-devicons'
+      },
+      config = true
+    },
+    {
+      --brew install ripgrep for better performance
+    'nvim-telescope/telescope.nvim', branch = '0.1.x',
+      dependencies = { 'nvim-lua/plenary.nvim' }
     },
     {
       "neovim/nvim-lspconfig",

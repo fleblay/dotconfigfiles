@@ -23,6 +23,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+
 require("lazy").setup(
   {
     {
@@ -163,11 +164,11 @@ require("lazy").setup(
             -- See `:help vim.lsp.*` for documentation on any of the below functions
             local opts = { buffer = ev.buf }
             vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-            vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts) --USEFULL
-            vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)      --USEFULL
+            vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)        --USEFULL
+            vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)              --USEFULL
             vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
             vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts) --USEFULL
-            vim.keymap.set('n', 'gl', vim.lsp.buf.signature_help, opts) --USEFULL
+            vim.keymap.set('n', 'gl', vim.lsp.buf.signature_help, opts)    --USEFULL
             --workspace
             vim.keymap.set('n', 'sfa', vim.lsp.buf.add_workspace_folder, opts)
             vim.keymap.set('n', 'sfr', vim.lsp.buf.remove_workspace_folder, opts)
@@ -175,7 +176,7 @@ require("lazy").setup(
               print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
             end, opts)
             vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
-            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts) --USEFULL
+            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)     --USEFULL
             vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts) --USEFULL
             vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
             vim.keymap.set('n', 'g=', function()
@@ -183,6 +184,98 @@ require("lazy").setup(
             end, opts)
           end,
         })
+      end
+    },
+    {
+      "mfussenegger/nvim-dap",
+      dependencies = {
+        "rcarriga/nvim-dap-ui",
+        "mxsdev/nvim-dap-vscode-js",
+        -- build debugger from source
+        {
+          "microsoft/vscode-js-debug",
+          version = "1.x",
+          build = "npm i && npm run compile vsDebugServerBundle && mv dist out"
+        }
+      },
+      keys = {
+        -- normal mode is default
+        { "<leader>db", function() require 'dap'.toggle_breakpoint() end },
+        { "<leader>dd", function() require 'dap'.continue() end },
+        { "<leader>dv", function() require 'dap'.step_over() end },
+        { "<leader>di", function() require 'dap'.step_into() end },
+        { "<leader>do", function() require 'dap'.step_out() end },
+      },
+      config = function()
+        require("dap-vscode-js").setup({
+          debugger_path = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug",
+          adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost', 'node', 'chrome' },
+        })
+
+        local js_based_languages = { "typescript", "javascript", "typescriptreact" }
+
+        for _, language in ipairs(js_based_languages) do
+          require("dap").configurations[language] = {
+            -- attach to a node process that has been started with
+            -- `--inspect` for longrunning tasks or `--inspect-brk` for short tasks
+            -- npm script -> `node --inspect-brk ./node_modules/.bin/vite dev`
+            {
+              -- use nvim-dap-vscode-js's pwa-node debug adapter
+              type = "pwa-node",
+              -- attach to an already running node process with --inspect flag
+              -- default port: 9222
+              request = "attach",
+              -- allows us to pick the process using a picker
+              processId = require 'dap.utils'.pick_process,
+              -- name of the debug action you have to select for this config
+              name = "Attach debugger to existing `node --inspect` process",
+              -- for compiled languages like TypeScript or Svelte.js
+              sourceMaps = true,
+              -- resolve source maps in nested locations while ignoring node_modules
+              resolveSourceMapLocations = {
+                "${workspaceFolder}/**",
+                "!**/node_modules/**" },
+              -- path to src in vite based projects (and most other projects as well)
+              cwd = "${workspaceFolder}/src",
+              -- we don't want to debug code inside node_modules, so skip it!
+              skipFiles = { "${workspaceFolder}/node_modules/**/*.js" },
+            },
+            {
+              type = "pwa-chrome",
+              name = "Launch Chrome to debug client",
+              request = "launch",
+              url = "http://localhost:5173", -- TO BE CHANGED
+              sourceMaps = true,
+              protocol = "inspector",
+              port = 9222,
+              webRoot = "${workspaceFolder}/src",
+              -- skip files from vite's hmr
+              skipFiles = { "**/node_modules/**/*", "**/@vite/*", "**/src/client/*", "**/src/*" },
+            },
+            -- only if language is javascript, offer this debug action
+            language == "javascript" and {
+              -- use nvim-dap-vscode-js's pwa-node debug adapter
+              type = "pwa-node",
+              -- launch a new process to attach the debugger to
+              request = "launch",
+              -- name of the debug action you have to select for this config
+              name = "Launch file in new node process",
+              -- launch current file
+              program = "${file}",
+              cwd = "${workspaceFolder}",
+            } or nil,
+          }
+        end
+
+        require("dapui").setup()
+        local dap, dapui = require("dap"), require("dapui")
+        dap.listeners.after.event_initialized["dapui_config"] = function()
+          dapui.open({ reset = true })
+        end
+        dap.listeners.before.event_terminated["dapui_config"] = dapui.close
+        dap.listeners.before.event_exited["dapui_config"] = dapui.close
+
+        vim.keymap.set('n', '<leader>du', require 'dapui'.toggle)
       end
     },
   }

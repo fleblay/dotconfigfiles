@@ -220,6 +220,16 @@ require("lazy").setup(
             -- `--inspect` for longrunning tasks or `--inspect-brk` for short tasks
             -- npm script -> `node --inspect-brk ./node_modules/.bin/vite dev`
             {
+              type = "pwa-node",
+              request = "attach",
+              name = "Attach debugger with .vscode rule",
+              sourceMaps = true,
+              continueOnAttach = true,
+              sourceMapPathOverrides = {
+                "./*" ,"${workspaceRoot}"
+              }
+            },
+            {
               -- use nvim-dap-vscode-js's pwa-node debug adapter
               type = "pwa-node",
               -- attach to an already running node process with --inspect flag

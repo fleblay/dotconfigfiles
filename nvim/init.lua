@@ -1,3 +1,7 @@
+--TODO : Fix shortcut for completion
+--TODO : Remove mapping for finding files from vimrc
+--TODO : Use default mapping for nvim_lsp_config and replace replace space by backtick ?
+
 --Source old vimrc file
 vim.cmd("source ~/.vimrc")
 vim.g.mapleader = " "
@@ -155,6 +159,9 @@ require("lazy").setup(
         --brew install gopls
         require 'lspconfig'.gopls.setup {}
 
+        --brew install vscode-langservers-extracted
+        require'lspconfig'.jsonls.setup{}
+
         -- Global mappings.
         -- See `:help vim.diagnostic.*` for documentation on any of the below functions
         vim.keymap.set('n', 'sso', vim.diagnostic.open_float)
@@ -232,14 +239,15 @@ require("lazy").setup(
             -- `--inspect` for longrunning tasks or `--inspect-brk` for short tasks
             -- npm script -> `node --inspect-brk ./node_modules/.bin/vite dev`
             {
-              type = "pwa-node",
+              continueOnAttach = true,
               request = "attach",
               name = "Attach debugger with .vscode rule",
-              sourceMaps = true,
-              continueOnAttach = true,
+              resolveSourceMapLocations = nil,
               sourceMapPathOverrides = {
-                "./*", "${workspaceRoot}"
-              }
+                "./*", "${workspaceRoot}/*"
+              },
+              sourceMaps = true,
+              type = "node", --pwa-node
             },
             {
               -- use nvim-dap-vscode-js's pwa-node debug adapter
@@ -327,7 +335,7 @@ require("lazy").setup(
             ['<C-b>'] = cmp.mapping.scroll_docs(-4),
             ['<C-f>'] = cmp.mapping.scroll_docs(4),
             ['<C-Space>'] = cmp.mapping.complete(),
-            ['<C-e>'] = cmp.mapping.abort(),
+            ['<C-e>'] = cmp.mapping.abort(),                   --FIXME !!!!!
             ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
           }),
           sources = cmp.config.sources({
@@ -367,6 +375,7 @@ require("lazy").setup(
 
         -- Set up lspconfig.
         -- FIXME -> Use a loop
+        -- FIXME -> Add JSON capabilities
         local capabilities = require('cmp_nvim_lsp').default_capabilities()
         require('lspconfig')['tsserver'].setup {
           capabilities = capabilities
@@ -378,6 +387,9 @@ require("lazy").setup(
           capabilities = capabilities
         }
         require('lspconfig')['eslint'].setup {
+          capabilities = capabilities
+        }
+        require('lspconfig')['jsonls'].setup {
           capabilities = capabilities
         }
       end,

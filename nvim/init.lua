@@ -160,7 +160,7 @@ require("lazy").setup(
         require 'lspconfig'.gopls.setup {}
 
         --brew install vscode-langservers-extracted
-        require'lspconfig'.jsonls.setup{}
+        require 'lspconfig'.jsonls.setup {}
 
         -- Global mappings.
         -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -226,6 +226,7 @@ require("lazy").setup(
         { "<leader>do", function() require 'dap'.step_out() end },
       },
       config = function()
+        require('dap').set_log_level('DEBUG')
         require("dap-vscode-js").setup({
           debugger_path = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug",
           adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost', 'node', 'chrome' },
@@ -239,15 +240,17 @@ require("lazy").setup(
             -- `--inspect` for longrunning tasks or `--inspect-brk` for short tasks
             -- npm script -> `node --inspect-brk ./node_modules/.bin/vite dev`
             {
-              continueOnAttach = true,
               request = "attach",
               name = "Attach debugger with .vscode rule",
               resolveSourceMapLocations = nil,
               sourceMapPathOverrides = {
-                "./*", "${workspaceRoot}/*"
+                "./*", "${workspaceFolder}/*"
               },
+              localRoot = vim.loop.cwd(),
               sourceMaps = true,
-              type = "node", --pwa-node
+              type = "pwa-node", --pwa-node
+              continueOnAttach = true,
+              internalConsoleOptions = "neverOpen"
             },
             {
               -- use nvim-dap-vscode-js's pwa-node debug adapter
@@ -393,6 +396,17 @@ require("lazy").setup(
           capabilities = capabilities
         }
       end,
+    },
+    {
+      "folke/persistence.nvim",
+      event = "BufReadPre",
+      opts = { options = vim.opt.sessionoptions:get() },
+      -- stylua: ignore
+      keys = {
+        { "<leader>qs", function() require("persistence").load() end,                desc = "Restore Session" },
+        { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Restore Last Session" },
+        { "<leader>qd", function() require("persistence").stop() end,                desc = "Don't Save Current Session" },
+      },
     },
   }
 )

@@ -119,7 +119,7 @@ require("lazy").setup(
 
         --brew install vscode-langservers-extracted
         require 'lspconfig'.eslint.setup({
-          on_attach = function(_, bufnr)
+          on_attach = function(client , bufnr)
             vim.api.nvim_create_autocmd("BufWritePre", {
               buffer = bufnr,
               command = "EslintFixAll",
@@ -341,7 +341,7 @@ require("lazy").setup(
           mapping = cmp.mapping.preset.insert({
             ['<C-b>'] = cmp.mapping.scroll_docs(-4),
             ['<C-f>'] = cmp.mapping.scroll_docs(4),
-            ['<C-Space>'] = cmp.mapping.complete(),            --FIXME
+            ['<S-Space>'] = cmp.mapping.complete(),            --FIXME
             ['<C-e>'] = cmp.mapping.abort(),
             ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
           }),

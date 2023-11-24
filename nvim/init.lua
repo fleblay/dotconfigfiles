@@ -47,6 +47,7 @@ require("lazy").setup(
       config = function()
         local configs = require("nvim-treesitter.configs")
 
+        ---@diagnostic disable-next-line missing-fields
         configs.setup({
           ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "typescript", "bash", "html", "javascript", "json",
             "markdown", "tsx", "yaml" },
@@ -101,7 +102,7 @@ require("lazy").setup(
       branch = '0.1.x',
       dependencies = { 'nvim-lua/plenary.nvim' },
       config = function()
-        require("telescope").setup()
+        require("telescope").setup({})
         local builtin = require('telescope.builtin')
         vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
         vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
@@ -111,13 +112,14 @@ require("lazy").setup(
     },
     {
       "neovim/nvim-lspconfig",
+      dependencies = { "folke/neodev.nvim" },
       config = function()
         --brew install typescript-language-server
         require 'lspconfig'.tsserver.setup {}
 
         --brew install vscode-langservers-extracted
         require 'lspconfig'.eslint.setup({
-          on_attach = function(client, bufnr)
+          on_attach = function(_, bufnr)
             vim.api.nvim_create_autocmd("BufWritePre", {
               buffer = bufnr,
               command = "EslintFixAll",
@@ -167,7 +169,7 @@ require("lazy").setup(
         vim.keymap.set('n', 'sso', vim.diagnostic.open_float)
         vim.keymap.set('n', 'ssp', vim.diagnostic.goto_prev)
         vim.keymap.set('n', 'ssn', vim.diagnostic.goto_next)
-        --vim.keymap.set('n', 'ssl', vim.diagnostic.setloclist)
+        vim.keymap.set('n', 'ssl', vim.diagnostic.setloclist)
 
         -- Use LspAttach autocommand to only map the following keys
         -- after the language server attaches to the current buffer
@@ -176,9 +178,8 @@ require("lazy").setup(
           callback = function(ev)
             -- Enable completion triggered by <c-x><c-o>
             vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-            vim.keymap.set('i', '<C-k>', '<C-x><C-o>') --MOST USEFULL
 
-            vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc'
+            vim.bo.tagfunc = 'v:lua.vim.lsp.tagfunc' -- usefull ?
             -- Buffer local mappings.
             -- See `:help vim.lsp.*` for documentation on any of the below functions
             local opts = { buffer = ev.buf }
@@ -186,8 +187,7 @@ require("lazy").setup(
             vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)        --USEFULL
             vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)              --USEFULL
             vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-            vim.keymap.set('i', '<C-l>', vim.lsp.buf.signature_help, opts) --USEFULL
-            vim.keymap.set('n', 'gl', vim.lsp.buf.signature_help, opts)    --USEFULL
+            vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts) --USEFULL
             --workspace
             vim.keymap.set('n', 'sfa', vim.lsp.buf.add_workspace_folder, opts)
             vim.keymap.set('n', 'sfr', vim.lsp.buf.remove_workspace_folder, opts)
@@ -195,8 +195,8 @@ require("lazy").setup(
               print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
             end, opts)
             vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
-            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)     --USEFULL
-            vim.keymap.set('n', 'gc', vim.lsp.buf.code_action, opts) --USEFULL
+            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)            --USEFULL
+            vim.keymap.set({ 'n', 'v' }, 'gc', vim.lsp.buf.code_action, opts) --USEFULL
             vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
             vim.keymap.set('n', 'g=', function()
               vim.lsp.buf.format { async = true }
@@ -227,6 +227,7 @@ require("lazy").setup(
       },
       config = function()
         require('dap').set_log_level('DEBUG')
+        ---@diagnostic disable-next-line missing-fields
         require("dap-vscode-js").setup({
           debugger_path = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug",
           adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost', 'node', 'chrome' },
@@ -320,16 +321,19 @@ require("lazy").setup(
         'hrsh7th/cmp-cmdline',
         'hrsh7th/nvim-cmp',
         'L3MON4D3/LuaSnip',
-        'saadparwaiz1/cmp_luasnip'
+        'saadparwaiz1/cmp_luasnip',
+        'neovim/nvim-lspconfig',
       },
       config = function()
         local cmp = require 'cmp'
+        ---@diagnostic disable-next-line missing-fields
         cmp.setup({
           snippet = {
             expand = function(args)
               require('luasnip').lsp_expand(args.body)
             end,
           },
+          ---@diagnostic disable-next-line missing-fields
           window = {
             -- completion = cmp.config.window.bordered(),
             -- documentation = cmp.config.window.bordered(),
@@ -337,8 +341,8 @@ require("lazy").setup(
           mapping = cmp.mapping.preset.insert({
             ['<C-b>'] = cmp.mapping.scroll_docs(-4),
             ['<C-f>'] = cmp.mapping.scroll_docs(4),
-            ['<C-Space>'] = cmp.mapping.complete(),
-            ['<C-e>'] = cmp.mapping.abort(),                   --FIXME !!!!!
+            ['<C-Space>'] = cmp.mapping.complete(),            --FIXME
+            ['<C-e>'] = cmp.mapping.abort(),
             ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
           }),
           sources = cmp.config.sources({
@@ -350,6 +354,7 @@ require("lazy").setup(
         })
 
         -- Set configuration for specific filetype.
+        ---@diagnostic disable-next-line missing-fields
         cmp.setup.filetype('gitcommit', {
           sources = cmp.config.sources({
             { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
@@ -359,6 +364,7 @@ require("lazy").setup(
         })
 
         -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+        ---@diagnostic disable-next-line missing-fields
         cmp.setup.cmdline({ '/', '?' }, {
           mapping = cmp.mapping.preset.cmdline(),
           sources = {
@@ -367,6 +373,7 @@ require("lazy").setup(
         })
 
         -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+        ---@diagnostic disable-next-line missing-fields
         cmp.setup.cmdline(':', {
           mapping = cmp.mapping.preset.cmdline(),
           sources = cmp.config.sources({

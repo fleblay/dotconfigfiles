@@ -112,58 +112,8 @@ require("lazy").setup(
     },
     {
       "neovim/nvim-lspconfig",
-      dependencies = { "folke/neodev.nvim" },
+      dependencies = {{"folke/neodev.nvim", opts = {} }},
       config = function()
-        --brew install typescript-language-server
-        require 'lspconfig'.tsserver.setup {}
-
-        --brew install vscode-langservers-extracted
-        require 'lspconfig'.eslint.setup({
-          on_attach = function(client , bufnr)
-            vim.api.nvim_create_autocmd("BufWritePre", {
-              buffer = bufnr,
-              command = "EslintFixAll",
-            })
-          end,
-        })
-
-        --brew install lua-language-server
-        require 'lspconfig'.lua_ls.setup {
-          on_init = function(client)
-            local path = client.workspace_folders[1].name
-            if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
-              client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
-                Lua = {
-                  runtime = {
-                    -- Tell the language server which version of Lua you're using
-                    -- (most likely LuaJIT in the case of Neovim)
-                    version = 'LuaJIT'
-                  },
-                  -- Make the server aware of Neovim runtime files
-                  workspace = {
-                    checkThirdParty = false,
-                    library = {
-                      vim.env.VIMRUNTIME
-                      -- "${3rd}/luv/library"
-                      -- "${3rd}/busted/library",
-                    }
-                    -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-                    -- library = vim.api.nvim_get_runtime_file("", true)
-                  }
-                }
-              })
-              client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
-            end
-            return true
-          end
-        }
-
-        --brew install gopls
-        require 'lspconfig'.gopls.setup {}
-
-        --brew install vscode-langservers-extracted
-        require 'lspconfig'.jsonls.setup {}
-
         -- Global mappings.
         -- See `:help vim.diagnostic.*` for documentation on any of the below functions
         vim.keymap.set('n', 'sso', vim.diagnostic.open_float)
@@ -195,7 +145,7 @@ require("lazy").setup(
               print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
             end, opts)
             vim.keymap.set('n', 'gtd', vim.lsp.buf.type_definition, opts)
-            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)            --USEFULL
+            vim.keymap.set('n', 'ssr', vim.lsp.buf.rename, opts)              --USEFULL
             vim.keymap.set({ 'n', 'v' }, 'gc', vim.lsp.buf.code_action, opts) --USEFULL
             vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
             vim.keymap.set('n', 'g=', function()
@@ -245,7 +195,7 @@ require("lazy").setup(
               name = "Attach debugger with .vscode rule",
               resolveSourceMapLocations = nil,
               sourceMapPathOverrides = {
-                "./*", "${workspaceFolder}/*"
+                "*", "${workspaceFolder}/*"
               },
               localRoot = vim.loop.cwd(),
               sourceMaps = true,
@@ -322,7 +272,13 @@ require("lazy").setup(
         'hrsh7th/nvim-cmp',
         'L3MON4D3/LuaSnip',
         'saadparwaiz1/cmp_luasnip',
-        'neovim/nvim-lspconfig',
+        { 'neovim/nvim-lspconfig',
+          {
+            dependencies = {
+              'folke/neodev.nvim', opts = {}
+            }
+          }
+        }
       },
       config = function()
         local cmp = require 'cmp'
@@ -387,19 +343,62 @@ require("lazy").setup(
         -- FIXME -> Use a loop
         -- FIXME -> Add JSON capabilities
         local capabilities = require('cmp_nvim_lsp').default_capabilities()
-        require('lspconfig')['tsserver'].setup {
+
+        --brew install typescript-language-server
+        require 'lspconfig'.tsserver.setup {
           capabilities = capabilities
         }
-        require('lspconfig')['gopls'].setup {
+
+        --brew install vscode-langservers-extracted
+        require 'lspconfig'.eslint.setup({
+          on_attach = function(client, bufnr)
+            vim.api.nvim_create_autocmd("BufWritePre", {
+              buffer = bufnr,
+              command = "EslintFixAll",
+            })
+          end,
+          capabilities = capabilities
+        })
+
+        --brew install lua-language-server
+        require 'lspconfig'.lua_ls.setup {
+          on_init = function(client)
+            local path = client.workspace_folders[1].name
+            if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+              client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
+                Lua = {
+                  runtime = {
+                    -- Tell the language server which version of Lua you're using
+                    -- (most likely LuaJIT in the case of Neovim)
+                    version = 'LuaJIT'
+                  },
+                  -- Make the server aware of Neovim runtime files
+                  workspace = {
+                    checkThirdParty = false,
+                    library = {
+                      vim.env.VIMRUNTIME
+                      -- "${3rd}/luv/library"
+                      -- "${3rd}/busted/library",
+                    }
+                    -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+                    -- library = vim.api.nvim_get_runtime_file("", true)
+                  }
+                }
+              })
+              client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
+            end
+            return true
+          end,
           capabilities = capabilities
         }
-        require('lspconfig')['lua_ls'].setup {
+
+        --brew install gopls
+        require 'lspconfig'.gopls.setup {
           capabilities = capabilities
         }
-        require('lspconfig')['eslint'].setup {
-          capabilities = capabilities
-        }
-        require('lspconfig')['jsonls'].setup {
+
+        --brew install vscode-langservers-extracted
+        require 'lspconfig'.jsonls.setup {
           capabilities = capabilities
         }
       end,
@@ -415,6 +414,5 @@ require("lazy").setup(
         { "<leader>qd", function() require("persistence").stop() end,                desc = "Don't Save Current Session" },
       },
     },
-    { "folke/neodev.nvim", opts = {} },
   }
 )
